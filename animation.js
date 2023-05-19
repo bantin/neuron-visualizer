@@ -10,7 +10,7 @@ fetch('/data.json')
         // Initialize voltage range
         const voltageMin = -80; // minimum expected voltage
         const voltageMax = 40;  // maximum expected voltage
-        let time_factor = 10;
+        let time_factor = 5;
 
         let frame = 0;
 
@@ -26,7 +26,7 @@ fetch('/data.json')
 
         // Add OrbitControls 
         const controls = new OrbitControls(camera, renderer.domElement);
-        controls.autoRotate = true;
+        //controls.autoRotate = true;
 
         // Create the geometry
         const geometry = new THREE.BufferGeometry();
