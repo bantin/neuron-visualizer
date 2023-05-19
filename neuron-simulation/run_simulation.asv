@@ -1,0 +1,88 @@
+clear all;
+close all;
+
+%%
+
+% Add path to Python script
+if count(py.sys.path,'path_to_your_python_script') == 0
+    insert(py.sys.path,int32(0),'path_to_your_python_script');
+end
+
+duration = 50; % ms
+stim_start = 5; %ms
+stim_end = 180; %ms
+
+% Channels from Spruston (2005)
+%Structure: {x1, x2, density_pre, density_x1, density_x2, density_post}
+Nav_params = {0,600,0.051,0.051,0.02,0.02};
+Nav_inactivation = {340,700,1,1,0.3,0.3};
+Kap_params = {0,100,0,0.048,0.0940,0};
+Kad_params = {100,400,0,0.0940,0.33,0.33};
+Kdr_params = {0,10,0.04,0.04,0.04,0.04};
+Chr_params = {20,30,0.0015,0,0,0,stim_start,stim_end};
+
+% Additional Channels from Sterratt (2012)
+Nap_params = {300,400,0,0.0,0.0,0};
+
+Kca_params = {0,0,0,0,0,0};
+Mykca_params = {0,0,0,0,0,0};
+
+CalH_params = {400,600,0,0,0.1,0.1};
+Cal_params = {0,0,0,0,0,0};
+Car_params = {400,600,0,0,0.0,0.0};
+Car_mag_params = {0,0,0,0,0,0};
+Somacar_params = {0,0,0,0,0,0};
+Cat_params = {400,600,0,0,0.1,0.1};
+
+%channel_params = {Nav_params,Nav_inactivation,Kap_params,Kad_params,Kdr_params,Chr_params};
+channel_params = {Nav_params, Nav_inactivation, Kap_params, Kad_params, Kdr_params, Chr_params, Kca_params, CalH_params, Cal_params, Somacar_params, Nap_params, Mykca_params, Car_params, Car_mag_params, Cat_params};
+
+% Import Python module simulation
+mod = py.importlib.import_module('run_simulation');
+% Run simulation
+result = mod.run_simulation(duration, channel_params);
+
+% Import Python module morphology
+mor = py.importlib.import_module('run_morphology');
+% Get morphology
+morpho = mor.run_morphology(channel_params);
+
+% Get results
+time = double(result{1});
+section_names = cell(morpho{1});
+section_nums = double(morpho{3});
+
+p = morpho{4};
+for i = 1:length(p)
+positions(i,:) = double(p{i});
+end
+
+v = result{2};
+d = morpho{2};
+for i = 1:length(section_names)
+voltage(i,:) = double(v{i});
+distance_matrix(i,:) = double(d{i});
+end
+
+clear Chr_params Nav_inactivation Nav_params Kdr_params Kad_params Kap_params Kca_params CalH_params Cal_params Somacar_params Nap_params Mykca_params Car_params Car_mag_params Cat_params result morpho mod mor p v;
+
+% Plot results
+figure; 
+cmap = jet(161);  % Create a colormap with 161 different colors
+for i = 1:161
+    plot(time,voltage(i,:), 'Color', cmap(i,:));
+    hold on;
+end
+ylabel("Voltage (mV)");
+xlabel("Time (ms)");
+xlim([0 duration]);
+
+figure; 
+plot(time,voltage(1,:));
+hold on;
+plot(time,voltage(145,:));
+ylabel("Voltage (mV)");
+xlabel("Time (ms)");
+xlim([0 duration]);
+clear cmap i;
+
