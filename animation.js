@@ -10,7 +10,7 @@ fetch('/data.json')
         // Initialize voltage range
         const voltageMin = -80; // minimum expected voltage
         const voltageMax = 40;  // maximum expected voltage
-        let time_factor = 5;
+        let time_factor = 4;
 
         let frame = 0;
 
@@ -74,34 +74,43 @@ fetch('/data.json')
         }
 
 
-        // Create an array to store the spheres
-        let spheres = [];
+        // Create an array to store the cylinders
+        let cylinders = [];
 
         // Process the positions and voltages
-        for (let i = 0; i < data.positions.length; i++) {
-            const position = data.positions[i];
+        for (let i = 0; i < data.positions.length - 1; i++) {
+            const position = new THREE.Vector3(data.positions[i][0], data.positions[i][1], data.positions[i][2]);
+            const nextPosition = new THREE.Vector3(data.positions[i+1][0], data.positions[i+1][1], data.positions[i+1][2]);
             const diameter = Math.max(data.positions[i][3],3);
             const section_index = data.positions[i][4];
+            const next_section_index = data.positions[i+1][4];
             
             // Add vertex (point position)
-            vertices.push(position[0], position[1], position[2]);
+            vertices.push(position.x, position.y, position.z);
 
             // Color the point based on the voltage
             const voltage = data.voltage[section_index][0];
             const color = getColor((voltage - voltageMin) / (voltageMax - voltageMin));
             colors.push(color.r, color.g, color.b);
 
-            // Create the geometry and material for the sphere
-            let sphereGeometry = new THREE.SphereGeometry(diameter/2, 32, 32);
-            let sphereMaterial = new THREE.MeshBasicMaterial({color: color});
+            // Only create the cylinder if the section index is the same
+            if (section_index === next_section_index) {
+                // Create the geometry and material for the cylinder
+                let cylinderGeometry = new THREE.CylinderGeometry(diameter/2, diameter/2, position.distanceTo(nextPosition), 32);
+                let cylinderMaterial = new THREE.MeshBasicMaterial({color: color});
 
-            // Create the sphere, set its position, and add it to the scene
-            let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            sphere.position.set(position[0], position[1], position[2]);
-            scene.add(sphere);
+                // Create the cylinder, set its position and rotation
+                let cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+                cylinder.position.lerpVectors(position, nextPosition, 0.5);
+                cylinder.lookAt(nextPosition);
+                cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().subVectors(nextPosition, position).normalize());
 
-            // Store the sphere
-            spheres.push(sphere);
+                // Add it to the scene
+                scene.add(cylinder);
+
+                // Store the cylinder
+                cylinders.push(cylinder);
+            }
         }
 
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -118,18 +127,18 @@ fetch('/data.json')
         function animate() {
             controls.update();
             requestAnimationFrame(animate);
-            
-            // Update each sphere
-            for (let i = 0; i < spheres.length; i++) {
-                const sphere = spheres[i];
+                    
+            // Update each cylinder
+            for (let i = 0; i < cylinders.length; i++) {
+                const cylinder = cylinders[i];
                 const section_index = data.positions[i][4];
-        
+                
                 // Color the point based on the voltage
                 const voltage = data.voltage[section_index][frame];
                 const color = getColor((voltage - voltageMin) / (voltageMax - voltageMin));
-                sphere.material.color = color;
+                cylinder.material.color = color;
             }
-            
+
             // Proceed to next frame or go back to first frame if we've reached the end
             frame = (frame + time_factor) % data.voltage[0].length;
             console.log(frame);
@@ -137,5 +146,6 @@ fetch('/data.json')
         }        
 
         animate();
+
     });
 
