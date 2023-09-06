@@ -7,7 +7,7 @@ fetch("/data.json")
     fetch("/data_syn.json")
       .then((response2) => response2.json())
       .then((data_syn) => {
-        console.log(data_syn.synapse_pos);
+        //console.log(data_syn.synapse_pos);
 
         const scene = new THREE.Scene();
         let varMin = Infinity;
@@ -24,25 +24,31 @@ fetch("/data.json")
             }
           }
         }
-        console.log(varMin, varMax);
-        let pow = 0;
-        if (varMin != 0) {
-          let sign = Math.sign(varMin);
-          pow = Math.floor(Math.log10(Math.abs(varMin)));
-          varMin =
-            (sign * Math.round(Math.abs(varMin) * Math.pow(10, -pow))) /
-            Math.pow(10, -pow);
+
+        function adaptiveRounding(varMin, varMax) {
+          let difference = Math.abs(varMax - varMin);
+
+          // Calculate the number of significant figures based on the difference
+          let numSigFigs = Math.ceil(-Math.log10(difference)) + 1;
+          numSigFigs = Math.max(numSigFigs, 0); // Make sure it's non-negative
+
+          // Round the numbers to that many significant figures
+          if (varMin !== 0) {
+            let factor = Math.pow(10, numSigFigs);
+            varMin = Math.round(varMin * factor) / factor;
+          }
+          if (varMax !== 0) {
+            let factor = Math.pow(10, numSigFigs);
+            varMax = Math.round(varMax * factor) / factor;
+          }
+
+          return { varMin, varMax };
         }
 
-        if (varMax != 0) {
-          let sign = Math.sign(varMax);
-          pow = Math.floor(Math.log10(Math.abs(varMax)));
-          varMax =
-            (sign * Math.round(Math.abs(varMax) * Math.pow(10, -pow))) /
-            Math.pow(10, -pow);
-        }
-
-        console.log(varMin, varMax);
+        const vars_out = adaptiveRounding(varMin, varMax);
+        varMin = vars_out.varMin;
+        varMax = vars_out.varMax;
+        //console.log(varMin, varMax);
 
         let time_factor = 5;
         let frame = 0;
@@ -149,7 +155,7 @@ fetch("/data.json")
 
         const slider = document.createElement("input");
         slider.type = "range";
-        slider.min = -1;
+        slider.min = -10;
         slider.max = 10;
         slider.value = time_factor;
         slider.step = 1;
@@ -420,7 +426,9 @@ fetch("/data.json")
           controls.update();
           requestAnimationFrame(animate);
 
-          frame = (frame + time_factor) % data.var_plot[0].length;
+          frame =
+            (frame + time_factor + data.var_plot[0].length) %
+            data.var_plot[0].length;
 
           let simulationTime = frame * 0.025;
           simulationTimeElement.textContent =
@@ -430,7 +438,7 @@ fetch("/data.json")
             const cylinder = cylinders[i];
             const section_index_uncorrected = data.positions[i][4];
             const section_index =
-              data.positions[i + section_index_uncorrected][4]; // Correction for the fact that the numbers of points and cylinders are different
+              data.positions[i + section_index_uncorrected + 3][4]; // Correction for the fact that the numbers of points and cylinders are different
             const var_plot = data.var_plot[section_index][frame];
             const color = getColor((var_plot - varMin) / (varMax - varMin));
             cylinder.material.color = color;
@@ -464,9 +472,9 @@ fetch("/data.json")
           updateScaleBar();
 
           const newLinePosition =
-            (simulationTime * (262 - 70)) / data.var_plot[0].length / 0.025;
+            (simulationTime * (259 - 69)) / data.var_plot[0].length / 0.025;
           redLine.style.left = 35 + newLinePosition + "px";
-          console.log(newLinePosition);
+          // console.log(newLinePosition);
 
           renderer.render(scene, camera);
         }
