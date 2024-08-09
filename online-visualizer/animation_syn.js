@@ -694,7 +694,7 @@ fetch("/data.json")
           position.add(perpVector);
 
           let synapse = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 32, 32),
+            new THREE.SphereGeometry(2, 32, 32),
             new THREE.MeshBasicMaterial({ color: 0xffffff })
           );
           synapse.position.set(position.x, position.y, position.z);
