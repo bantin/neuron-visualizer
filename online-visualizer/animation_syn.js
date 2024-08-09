@@ -24,6 +24,8 @@ fetch("/data.json")
             }
           }
         }
+        varMax = 30;
+        varMin = -80;
 
         function onMouseClick(event) {
           mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
