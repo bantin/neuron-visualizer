@@ -6,7 +6,7 @@ from plot_results import plot_results
 from plot_results import kymograph_stim
 from plot_results import kymograph
 from run_simulation import reshape_v
-from run_simulation import generate_waveform
+from run_simulation import generate_waveform, generate_random_waveform
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
 import json
@@ -21,7 +21,7 @@ from swc_utils import count_compartments
 # morphology_file = "ri04.swc"
 morphology_file = "./cell4_2p_registered_cc_cleaned.swc"
 
-duration = 500  # Total duration in ms
+duration = 10000  # Total duration in ms
 dt = 0.025  # Time step in ms
 
 # Channels parameters
@@ -44,8 +44,8 @@ Cat_params = [0, 0, 550, 100]
 # where g = g0 + (g1 - g0) / (1 + exp((d - x) / z))
 
 # Channelrhodopsin parameters
-stim_start = 0  # ms
-stim_end = 400  # ms
+stim_start = 10  # ms
+stim_end = 10000  # ms
 Chr_params = [1, 0, 50, 20, stim_start, stim_end, 0, 0]
 # Chr_params = [1, 0, 5, 2, stim_start, stim_end, 0, 0]
 # Chr_params = []
@@ -55,20 +55,25 @@ Chr_params = [1, 0, 50, 20, stim_start, stim_end, 0, 0]
 channel_params = [Nav_params, Nav_inactivation, Kap_params, Kad_params, Kdr_params, Chr_params, Kca_params, CalH_params, Cal_params, Somacar_params, Nap_params, Mykca_params, Car_params, Car_mag_params, Cat_params]
 
 # Synapse parameters
-input_duration = 1000 # Duration of input in ms
-# synapse_params = [[100, 5, input_duration, 100, 0.001, "theta", "all", "ampa"], [100, 5, input_duration, 20, 0.01, "poisson", "basal", "gabaa"], [100, 105, input_duration, 100, 0.01, "gamma", "apical", "gabab"]]
-synapse_params = [[100, 5, input_duration, 100, 0.001, "theta", "apical", "ampa"]]
+input_duration = 10000 # Duration of input in ms
+synapse_params = [[100, 5, input_duration, 100, 0.01, "theta", "all", "ampa"], [100, 5, input_duration, 20, 0.01, "poisson", "all", "gabaa"], [100, 105, input_duration, 100, 0.01, "gamma", "apical", "gabab"]]
+# synapse_params = [[100, 5, input_duration, 100, 0.001, "theta", "apical", "ampa"]]
 # E.g. [200, 5, 195, 100, 0.001, "theta", "all", "ampa"] means: 200 AMPA synapses with Theta frequency input (100Hz avg. freq.) on all sections, with 5 ms delay, 190 ms duration, and 0.001 weight
-synapse_params = []
+# synapse_params = []
 
 # Parameters to output from the simulation. 
 outputs = ["v", "g_chr", "gexp_chr", "gkabar_kad"]
 
 
 # Channelrhodopsin light intensity parameters
-stimmax = 8e-4  # Set Channelrhodopsin light intensity 
-sim_params = [duration, dt, 2, 10, 190, 0]
-waveform = generate_waveform(sim_params, stimmax, stim_start, stim_end, "full")
+stimmax = 64e-4  # Set Channelrhodopsin light intensity 
+sim_params = [duration, dt, 2, 10, 10000, 0]
+# waveform = generate_waveform(sim_params, stimmax, stim_start, stim_end, "full")
+waveform = generate_random_waveform(sim_params, stimmax, stim_start, stim_end)
+
+plt.plot(waveform)
+plt.show()
+
 # waveform = np.zeros(len(waveform)) # Comment this line to use the waveform generated above
 # Options: pulses, step, full, ramp
 
