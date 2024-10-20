@@ -45,7 +45,7 @@ Cat_params = [0, 0, 550, 100]
 
 # Channelrhodopsin parameters
 stim_start = 10  # ms
-stim_end = 10000  # ms
+stim_end = duration  # ms
 Chr_params = [1, 0, 50, 20, stim_start, stim_end, 0, 0]
 # Chr_params = [1, 0, 5, 2, stim_start, stim_end, 0, 0]
 # Chr_params = []
@@ -55,18 +55,18 @@ Chr_params = [1, 0, 50, 20, stim_start, stim_end, 0, 0]
 channel_params = [Nav_params, Nav_inactivation, Kap_params, Kad_params, Kdr_params, Chr_params, Kca_params, CalH_params, Cal_params, Somacar_params, Nap_params, Mykca_params, Car_params, Car_mag_params, Cat_params]
 
 # Synapse parameters
-input_duration = 10000 # Duration of input in ms
-synapse_params = [[100, 5, input_duration, 100, 0.01, "theta", "all", "ampa"], [100, 5, input_duration, 20, 0.01, "poisson", "all", "gabaa"], [100, 105, input_duration, 100, 0.01, "gamma", "apical", "gabab"]]
+input_duration = duration # Duration of input in ms
+# synapse_params = [[100, 5, input_duration, 100, 0.01, "theta", "all", "ampa"], [100, 5, input_duration, 20, 0.01, "poisson", "all", "gabaa"], [100, 105, input_duration, 100, 0.01, "gamma", "apical", "gabab"]]
 # synapse_params = [[100, 5, input_duration, 100, 0.001, "theta", "apical", "ampa"]]
 # E.g. [200, 5, 195, 100, 0.001, "theta", "all", "ampa"] means: 200 AMPA synapses with Theta frequency input (100Hz avg. freq.) on all sections, with 5 ms delay, 190 ms duration, and 0.001 weight
-# synapse_params = []
+synapse_params = []
 
 # Parameters to output from the simulation. 
 outputs = ["v", "g_chr", "gexp_chr", "gkabar_kad"]
 
 
 # Channelrhodopsin light intensity parameters
-stimmax = 64e-4  # Set Channelrhodopsin light intensity 
+stimmax = 32e-4  # Set Channelrhodopsin light intensity 
 sim_params = [duration, dt, 2, 10, 10000, 0]
 # waveform = generate_waveform(sim_params, stimmax, stim_start, stim_end, "full")
 waveform = generate_random_waveform(sim_params, stimmax, stim_start, stim_end)
